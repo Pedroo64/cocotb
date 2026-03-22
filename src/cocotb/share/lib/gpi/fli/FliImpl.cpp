@@ -666,7 +666,7 @@ GpiIterator *FliImpl::iterate_handle(GpiObjHdl *obj_hdl,
             LOG_WARN("FLI: Loads iterator not implemented yet");
             break;
         default:
-            LOG_WARN("FLI: Other iterator types not implemented yet");
+            new_iter = new FliPackageIterator(this);
             break;
     }
 
@@ -1103,6 +1103,47 @@ void FliIterator::populate_handle_list(FliIterator::OneToMany childType) {
         default:
             LOG_WARN("Unhandled OneToMany Type (%d)", childType);
     }
+}
+
+
+FliPackageIterator::FliPackageIterator(GpiImplInterface *impl): GpiIterator(impl, nullptr) {
+  m_iterator = mti_GetTopRegion();
+  if (nullptr == m_iterator) {
+    LOG_WARN("mti_GetTopRegion returned NULL");
+    return;
+  }
+}
+
+GpiIterator::Status FliPackageIterator::next_handle(std::string &, GpiObjHdl **hdl, void **raw_hdl) {
+  GpiObjHdl *new_obj;
+  mtiRegionIdT obj;
+
+  while (true) {
+    obj = m_iterator;
+    if (obj == nullptr) {
+      return GpiIterator::END;
+    }
+    m_iterator = mti_NextRegion(m_iterator);
+    int type = mti_GetRegionKind(obj);
+    if (type == accPackage) {
+      break;
+    }
+  }
+
+
+  FliImpl *fli_impl = reinterpret_cast<FliImpl *>(m_impl);
+  std::string name = mti_GetRegionName(obj);
+  std::string fq_name = mti_GetLibraryName(obj);
+  LOG_DEBUG("FLI: package found '%s'", fq_name.c_str());
+
+  PLI_INT32 acc_type = acc_fetch_type(obj);
+  PLI_INT32 acc_full_type = acc_fetch_fulltype(obj);
+
+  new_obj = new FliObjHdl(fli_impl, obj, GPI_PACKAGE, acc_type, acc_full_type);
+  new_obj->initialise(name, fq_name);
+  *hdl = new_obj;
+
+  return GpiIterator::NATIVE;
 }
 
 static int startup_callback(void *) {

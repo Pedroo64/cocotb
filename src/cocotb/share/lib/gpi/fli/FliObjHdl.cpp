@@ -58,6 +58,7 @@ int FliObjHdl::initialise(const std::string &name, const std::string &fq_name) {
             m_indexable = true;
             // fall through
         case GPI_MODULE:
+        case GPI_PACKAGE:
             m_num_elems = 1;
             break;
         default:

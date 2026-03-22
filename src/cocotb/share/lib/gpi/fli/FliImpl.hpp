@@ -413,6 +413,16 @@ class FliIterator : public GpiIterator {
     std::vector<void *>::iterator m_iterator;
 };
 
+class FliPackageIterator : public GpiIterator {
+  public:
+    FliPackageIterator(GpiImplInterface *impl);
+
+    Status next_handle(std::string &name, GpiObjHdl **hdl,
+                       void **raw_hdl) override;
+  private:
+    mtiRegionIdT m_iterator = nullptr;
+};
+
 class FliImpl : public GpiImplInterface {
   public:
     FliImpl(const std::string &name)
