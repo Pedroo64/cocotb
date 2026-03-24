@@ -720,6 +720,7 @@ decltype(FliIterator::iterate_over) FliIterator::iterate_over = [] {
 #endif
         {accForGenerate, region_options},
         {accConfiguration, region_options},
+        {accPackage, region_options},
 
         {accSignal, signal_options},
         {accSignalBit, signal_options},
@@ -1133,8 +1134,9 @@ GpiIterator::Status FliPackageIterator::next_handle(std::string &, GpiObjHdl **h
 
   FliImpl *fli_impl = reinterpret_cast<FliImpl *>(m_impl);
   std::string name = mti_GetRegionName(obj);
-  std::string fq_name = mti_GetLibraryName(obj);
-  LOG_DEBUG("FLI: package found '%s'", fq_name.c_str());
+  std::string fq_name = ":" + name;
+
+  LOG_DEBUG("FLI: package found '%s' = '%s'", name.c_str(), fq_name.c_str());
 
   PLI_INT32 acc_type = acc_fetch_type(obj);
   PLI_INT32 acc_full_type = acc_fetch_fulltype(obj);
